@@ -52,7 +52,8 @@ async def download_coroutine(session, url):
         await response.release()
         loop = asyncio.get_event_loop()
         csvfile = await loop.run_in_executor(e, functools.partial(unzip, binaryfile, filename))
-        return await finder(csvfile)
+        result = await finder(csvfile)
+        return None
 
 def unzip(binarysteam, filename):
     print("\033[36m" + f"BEGINING: Unziping file {filename}" + "\033[0m")
@@ -64,17 +65,19 @@ def unzip(binarysteam, filename):
 async def finder(filename):
     lst = []
     lstOfSubStrings = ["MEDICAL","SCIENCE","GENERAL_HEALTH","HEALTH_PANDEMIC","HEALTH_SEXTRANSDISEASE","HEALTH_VACCINATION","MEDICAL_SECURITY"]
-    async with aiofiles.open(filename) as file:
-        async for line in file:
-            subline = line.split("\t")[8]
-            if any(x in subline for x in lstOfSubStrings):
-                lst.append(line)
-    return lst
+    async with aiofiles.open(filename) as csvfile:
+        pass
+        # async for line in csvfile:
+        #     subline = line.split("\t")[8]
+        #     if any(x in subline for x in lstOfSubStrings):
+        #         lst.append(line)
+                
+    # return len(lst)
 
 async def main(loop):
    
     async with aiohttp.ClientSession(loop=loop) as session:
-        tasks = [download_coroutine(session, url) for url in urls]
+        tasks = [download_coroutine(session, url) for url in urls[0:1]]
         await asyncio.gather(*tasks)
 
 ## Create a producer and consumer patterne
@@ -88,6 +91,6 @@ if __name__ == '__main__':
 
     # Download and read list of urls from gdelt data
     s = time.perf_counter()
-    lines = loop.run_until_complete(main(loop))
+    loop.run_until_complete(main(loop))
     elapsed = time.perf_counter() - s
     print(f"{__file__} executed in {elapsed:0.2f} seconds.")
